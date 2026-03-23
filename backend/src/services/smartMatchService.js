@@ -83,24 +83,43 @@ const getMatchLabel = (score) => {
 };
 
 export const scoreSmartMatch = (searchInput, item) => {
-  const searchText = [searchInput.query, searchInput.description, ...(searchInput.keywords || [])].join(' ');
+  const searchText = [
+    searchInput.query,
+    searchInput.description,
+    ...(searchInput.keywords || []),
+    ...(searchInput.visualKeywords || []),
+  ].join(' ');
+
+  const itemKeywordsMerged = [
+    ...(item.keywords || []),
+    ...(item.aiMappedKeywords || []),
+  ];
+
+  const itemVisualKeywordsMerged = [
+    ...(item.aiVisualKeywords || []),
+    ...(item.aiMappedKeywords || []),
+  ];
+
   const itemText = [
     item.title,
     item.description,
     item.aiMappedDescription,
+    item.aiDetailedDescription,
     item.category,
     item.aiMappedCategory,
     item.location,
     item.aiMappedLocationHint,
-    ...(item.keywords || []),
-    ...(item.aiMappedKeywords || []),
+    ...itemKeywordsMerged,
+    ...itemVisualKeywordsMerged,
   ].join(' ');
 
   const descriptionScore = cosineSimilarity(searchText, itemText);
-  const keywordScore = keywordOverlap(searchInput.keywords, [
-    ...(item.keywords || []),
-    ...(item.aiMappedKeywords || []),
-  ]);
+  const keywordScore = keywordOverlap(searchInput.keywords, itemKeywordsMerged);
+  const visualKeywordScore = keywordOverlap(searchInput.visualKeywords, itemVisualKeywordsMerged);
+  const detailDescriptionScore = cosineSimilarity(
+    searchInput.description || searchInput.query,
+    item.aiDetailedDescription || item.aiMappedDescription || item.description
+  );
   const locationScore = cosineSimilarity(searchInput.location, item.location || '');
 
   let categoryScore = 0;
@@ -111,17 +130,21 @@ export const scoreSmartMatch = (searchInput, item) => {
   const imageScore = imageHashSimilarity(searchInput.imageHash, item.imageHash);
 
   const weighted =
-    descriptionScore * 0.35 +
-    keywordScore * 0.25 +
+    descriptionScore * 0.25 +
+    detailDescriptionScore * 0.2 +
+    keywordScore * 0.2 +
+    visualKeywordScore * 0.15 +
     locationScore * 0.1 +
-    categoryScore * 0.1 +
-    imageScore * 0.2;
+    categoryScore * 0.05 +
+    imageScore * 0.05;
 
   const totalScore = toScore(weighted);
 
   const reasons = [];
   if (descriptionScore >= 0.45) reasons.push('Description is semantically similar');
+  if (detailDescriptionScore >= 0.5) reasons.push('Detailed description is closely matched');
   if (keywordScore >= 0.4) reasons.push('Keyword overlap is strong');
+  if (visualKeywordScore >= 0.4) reasons.push('Visual keyword overlap from image scan is strong');
   if (locationScore >= 0.4) reasons.push('Location is similar');
   if (categoryScore === 1) reasons.push('Category matches exactly');
   if (imageScore >= 0.75) reasons.push('Uploaded image looks visually similar');
@@ -132,7 +155,9 @@ export const scoreSmartMatch = (searchInput, item) => {
     reasons,
     breakdown: {
       descriptionScore: toScore(descriptionScore),
+      detailDescriptionScore: toScore(detailDescriptionScore),
       keywordScore: toScore(keywordScore),
+      visualKeywordScore: toScore(visualKeywordScore),
       locationScore: toScore(locationScore),
       categoryScore: toScore(categoryScore),
       imageScore: toScore(imageScore),
@@ -146,6 +171,12 @@ export const buildSearchQueryInput = (body, imageHash = '') => ({
   keywords: Array.isArray(body.keywords)
     ? body.keywords
     : String(body.keywords || '')
+        .split(',')
+        .map((value) => value.trim())
+        .filter(Boolean),
+  visualKeywords: Array.isArray(body.visualKeywords)
+    ? body.visualKeywords
+    : String(body.visualKeywords || '')
         .split(',')
         .map((value) => value.trim())
         .filter(Boolean),

@@ -12,11 +12,18 @@ export const runAutoMatchingForItem = ({ postedItem, candidates, limit = 5 }) =>
 
   const searchInput = buildSearchQueryInput(
     {
-      query: postedItem.description || postedItem.title || '',
-      description: postedItem.description || '',
-      keywords: postedItem.keywords || [],
-      category: postedItem.category || '',
-      location: postedItem.location || '',
+      query:
+        postedItem.aiDetailedDescription ||
+        postedItem.aiMappedDescription ||
+        postedItem.description ||
+        postedItem.title ||
+        '',
+      description:
+        postedItem.aiDetailedDescription || postedItem.aiMappedDescription || postedItem.description || '',
+      keywords: [...(postedItem.keywords || []), ...(postedItem.aiMappedKeywords || [])],
+      visualKeywords: postedItem.aiVisualKeywords || [],
+      category: postedItem.aiMappedCategory || postedItem.category || '',
+      location: postedItem.aiMappedLocationHint || postedItem.location || '',
     },
     postedItem.imageHash || ''
   );

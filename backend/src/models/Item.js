@@ -46,7 +46,16 @@ const itemSchema = new mongoose.Schema(
       default: '',
       trim: true,
     },
+    aiDetailedDescription: {
+      type: String,
+      default: '',
+      trim: true,
+    },
     aiMappedKeywords: {
+      type: [String],
+      default: [],
+    },
+    aiVisualKeywords: {
       type: [String],
       default: [],
     },
@@ -83,7 +92,9 @@ itemSchema.index({
   description: 'text',
   keywords: 'text',
   aiMappedDescription: 'text',
+  aiDetailedDescription: 'text',
   aiMappedKeywords: 'text',
+  aiVisualKeywords: 'text',
   aiMappedCategory: 'text',
   category: 'text',
   location: 'text',

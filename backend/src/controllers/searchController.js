@@ -30,8 +30,9 @@ export const searchItems = async (req, res) => {
     const queryInput = buildSearchQueryInput(
       {
         query: aiMappedSearch.normalizedQuery,
-        description: aiMappedSearch.normalizedQuery,
+        description: aiMappedSearch.normalizedDetailedDescription,
         keywords: aiMappedSearch.normalizedKeywords,
+        visualKeywords: aiMappedSearch.normalizedVisualKeywords,
         category: aiMappedSearch.normalizedCategory,
         location: aiMappedSearch.normalizedLocation,
       },
@@ -92,6 +93,8 @@ export const searchItems = async (req, res) => {
       aiMapping: {
         provider: aiMappedSearch.provider,
         confidence: aiMappedSearch.confidence,
+        detailedDescription: aiMappedSearch.normalizedDetailedDescription,
+        visualKeywords: aiMappedSearch.normalizedVisualKeywords,
       },
       results: ranked,
     });

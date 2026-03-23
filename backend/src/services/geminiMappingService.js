@@ -84,15 +84,19 @@ Analyze the user input${imageBuffer ? ' and attached image' : ''}.
 Return ONLY JSON with this exact schema:
 {
   "mappedDescription": "string",
+  "detailedDescription": "string",
   "mappedCategory": "string",
   "mappedKeywords": ["string"],
+  "visualKeywords": ["string"],
   "mappedLocationHint": "string",
   "confidence": 0.0
 }
 Guidelines:
 - Improve description clarity in mappedDescription.
+- detailedDescription must include concrete visual details from the FULL image (object shape, visible text, color patterns, accessories, unique marks).
 - mappedCategory should be short and practical.
 - mappedKeywords should be specific object keywords (max 12).
+- visualKeywords should focus on what is visually seen in the full image (max 12).
 - confidence is 0..1.
 User data:
 Title: ${title}
@@ -111,8 +115,10 @@ Location: ${location}`;
     if (!mapped) {
       return {
         mappedDescription: description,
+        detailedDescription: description,
         mappedCategory: category,
         mappedKeywords: toUniqueKeywords(keywords),
+        visualKeywords: [],
         mappedLocationHint: location,
         confidence: 0,
         provider: 'fallback',
@@ -121,8 +127,10 @@ Location: ${location}`;
 
     return {
       mappedDescription: String(mapped.mappedDescription || description || '').trim(),
+      detailedDescription: String(mapped.detailedDescription || mapped.mappedDescription || description || '').trim(),
       mappedCategory: String(mapped.mappedCategory || category || '').trim(),
       mappedKeywords: toUniqueKeywords([...(keywords || []), ...(mapped.mappedKeywords || [])]),
+      visualKeywords: toUniqueKeywords(mapped.visualKeywords || []),
       mappedLocationHint: String(mapped.mappedLocationHint || location || '').trim(),
       confidence: Number(mapped.confidence || 0),
       provider: 'gemini',
@@ -130,8 +138,10 @@ Location: ${location}`;
   } catch {
     return {
       mappedDescription: description,
+      detailedDescription: description,
       mappedCategory: category,
       mappedKeywords: toUniqueKeywords(keywords),
+      visualKeywords: [],
       mappedLocationHint: location,
       confidence: 0,
       provider: 'fallback',
@@ -153,8 +163,10 @@ Map this user search input${imageBuffer ? ' and attached image' : ''} to a riche
 Return ONLY JSON with schema:
 {
   "normalizedQuery": "string",
+  "normalizedDetailedDescription": "string",
   "normalizedCategory": "string",
   "normalizedKeywords": ["string"],
+  "normalizedVisualKeywords": ["string"],
   "normalizedLocation": "string",
   "confidence": 0.0
 }
@@ -175,8 +187,10 @@ Location: ${location}`;
     if (!mapped) {
       return {
         normalizedQuery: query || description,
+        normalizedDetailedDescription: description || query,
         normalizedCategory: category,
         normalizedKeywords: toUniqueKeywords(keywords),
+        normalizedVisualKeywords: [],
         normalizedLocation: location,
         confidence: 0,
         provider: 'fallback',
@@ -185,8 +199,12 @@ Location: ${location}`;
 
     return {
       normalizedQuery: String(mapped.normalizedQuery || query || description || '').trim(),
+      normalizedDetailedDescription: String(
+        mapped.normalizedDetailedDescription || mapped.normalizedQuery || description || query || ''
+      ).trim(),
       normalizedCategory: String(mapped.normalizedCategory || category || '').trim(),
       normalizedKeywords: toUniqueKeywords([...(keywords || []), ...(mapped.normalizedKeywords || [])]),
+      normalizedVisualKeywords: toUniqueKeywords(mapped.normalizedVisualKeywords || []),
       normalizedLocation: String(mapped.normalizedLocation || location || '').trim(),
       confidence: Number(mapped.confidence || 0),
       provider: 'gemini',
@@ -194,8 +212,10 @@ Location: ${location}`;
   } catch {
     return {
       normalizedQuery: query || description,
+      normalizedDetailedDescription: description || query,
       normalizedCategory: category,
       normalizedKeywords: toUniqueKeywords(keywords),
+      normalizedVisualKeywords: [],
       normalizedLocation: location,
       confidence: 0,
       provider: 'fallback',
