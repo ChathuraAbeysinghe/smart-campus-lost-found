@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Campus Lost & Found</title>
+  </head>
+  <body>
+    <main class="container">
+      <h1>Smart Campus Lost & Found</h1>
+      <p id="status">Checking backend status...</p>
+
+      <section>
+        <h2>Report Lost or Found Item</h2>
+        <form id="item-form">
+          <select id="type">
+            <option value="lost">Lost</option>
+            <option value="found">Found</option>
+          </select>
+          <input id="title" placeholder="Item title" required />
+          <input id="location" placeholder="Location" />
+          <input id="category" placeholder="Category (e.g., electronics)" />
+          <input id="keywords" placeholder="Keywords (comma separated)" />
+          <textarea id="description" placeholder="Detailed description" required></textarea>
+          <input id="item-image" type="file" accept="image/*" />
+          <button type="submit">Submit</button>
+        </form>
+      </section>
+
+      <section>
+        <h2>Smart Search</h2>
+        <form id="search-form">
+          <select id="search-type">
+            <option value="lost">I lost an item (search found posts)</option>
+            <option value="found">I found an item (search lost posts)</option>
+          </select>
+          <textarea id="search-query" placeholder="Describe what you are looking for" required></textarea>
+          <input id="search-keywords" placeholder="Keywords (comma separated)" />
+          <input id="search-location" placeholder="Location hint" />
+          <input id="search-category" placeholder="Category" />
+          <input id="search-image" type="file" accept="image/*" />
+          <button type="submit">Search</button>
+        </form>
+        <p id="search-meta"></p>
+        <ul id="search-results"></ul>
+      </section>
+
+      <section>
+        <h2>Recent Reports</h2>
+        <ul id="items"></ul>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
